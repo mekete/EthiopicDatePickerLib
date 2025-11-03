@@ -21,4 +21,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "EthiopicDatePickerLib"
 include(":app")
+include(":datepicker")
  

@@ -32,6 +32,8 @@ android {
 }
 
 dependencies {
+    // DatePicker library
+    implementation(project(":datepicker"))
 
     implementation(libs.appcompat)
     implementation(libs.material)
