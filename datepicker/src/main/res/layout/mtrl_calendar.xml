@@ -50,10 +50,25 @@
         <!-- Days of week will be added programmatically -->
     </GridLayout>
 
-    <!-- ViewPager for months -->
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/mtrl_calendar_months"
+    <!-- Container for calendar and year picker -->
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="280dp"/>
+        android:layout_height="280dp">
+
+        <!-- ViewPager for months -->
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/mtrl_calendar_months"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+        <!-- Year picker grid -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/mtrl_calendar_year_picker"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            android:background="@android:color/white"/>
+
+    </FrameLayout>
 
 </LinearLayout>

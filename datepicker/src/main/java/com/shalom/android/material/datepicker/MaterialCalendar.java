@@ -12,6 +12,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -34,10 +35,14 @@ public class MaterialCalendar<S> extends Fragment {
 
     private ViewPager2 monthsPager;
     private MonthsPagerAdapter pagerAdapter;
+    private RecyclerView yearPicker;
+    private YearGridAdapter yearAdapter;
+    private GridLayout daysOfWeekHeader;
     private Button monthYearButton;
     private ImageButton previousButton;
     private ImageButton nextButton;
 
+    private boolean isYearPickerVisible = false;
     private OnSelectionChangedListener<S> selectionChangedListener;
 
     public interface OnSelectionChangedListener<S> {
@@ -81,9 +86,14 @@ public class MaterialCalendar<S> extends Fragment {
         previousButton = root.findViewById(R.id.month_navigation_previous);
         nextButton = root.findViewById(R.id.month_navigation_next);
         monthsPager = root.findViewById(R.id.mtrl_calendar_months);
+        yearPicker = root.findViewById(R.id.mtrl_calendar_year_picker);
+        daysOfWeekHeader = root.findViewById(R.id.mtrl_calendar_days_of_week);
 
         // Setup days of week header
         setupDaysOfWeekHeader(root);
+
+        // Setup year picker
+        setupYearPicker();
 
         // Setup ViewPager
         pagerAdapter = new MonthsPagerAdapter(
@@ -122,6 +132,8 @@ public class MaterialCalendar<S> extends Fragment {
                 monthsPager.setCurrentItem(position + 1);
             }
         });
+
+        monthYearButton.setOnClickListener(v -> toggleYearPicker());
 
         return root;
     }
@@ -172,6 +184,63 @@ public class MaterialCalendar<S> extends Fragment {
 
     public void setOnSelectionChangedListener(OnSelectionChangedListener<S> listener) {
         this.selectionChangedListener = listener;
+    }
+
+    private void setupYearPicker() {
+        // Setup GridLayoutManager with 3 columns
+        GridLayoutManager layoutManager = new GridLayoutManager(requireContext(), 3);
+        yearPicker.setLayoutManager(layoutManager);
+
+        // Setup adapter with current year
+        int currentYear = currentMonth.getYear();
+        yearAdapter = new YearGridAdapter(currentYear, this::onYearSelected);
+        yearPicker.setAdapter(yearAdapter);
+    }
+
+    private void toggleYearPicker() {
+        isYearPickerVisible = !isYearPickerVisible;
+
+        if (isYearPickerVisible) {
+            // Show year picker, hide calendar
+            monthsPager.setVisibility(View.GONE);
+            daysOfWeekHeader.setVisibility(View.GONE);
+            previousButton.setVisibility(View.GONE);
+            nextButton.setVisibility(View.GONE);
+            yearPicker.setVisibility(View.VISIBLE);
+
+            // Scroll to current year
+            int currentYear = currentMonth.getYear();
+            int position = yearAdapter.getPositionForYear(currentYear);
+            yearPicker.scrollToPosition(position);
+        } else {
+            // Show calendar, hide year picker
+            monthsPager.setVisibility(View.VISIBLE);
+            daysOfWeekHeader.setVisibility(View.VISIBLE);
+            previousButton.setVisibility(View.VISIBLE);
+            nextButton.setVisibility(View.VISIBLE);
+            yearPicker.setVisibility(View.GONE);
+        }
+    }
+
+    private void onYearSelected(int year) {
+        // Calculate the selected month in the new year
+        Month newMonth = Month.create(year, currentMonth.getMonth());
+
+        // Check if the new month is within constraints
+        if (newMonth.compareTo(calendarConstraints.getStart()) >= 0 &&
+                newMonth.compareTo(calendarConstraints.getEnd()) <= 0) {
+            currentMonth = newMonth;
+
+            // Update the ViewPager to show the new month
+            int newPosition = pagerAdapter.getPositionForMonth(currentMonth);
+            monthsPager.setCurrentItem(newPosition, false);
+
+            // Update display
+            updateMonthYearDisplay();
+        }
+
+        // Close year picker
+        toggleYearPicker();
     }
 
     @Override
