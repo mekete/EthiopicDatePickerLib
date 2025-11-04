@@ -17,15 +17,15 @@
         <item>ጳጉሜ</item>
     </string-array>
 
-    <!-- Weekday Names (Short) (Amharic) -->
+    <!-- Weekday Names (Short) (Amharic) - Single letters -->
     <string-array name="weekday_names_short">
-        <item>ሰኞ</item>
-        <item>ማክ</item>
-        <item>ረብ</item>
-        <item>ሐሙ</item>
-        <item>አር</item>
-        <item>ቅዳ</item>
-        <item>እሁ</item>
+        <item>ሰ</item>
+        <item>ማ</item>
+        <item>ረ</item>
+        <item>ሐ</item>
+        <item>አ</item>
+        <item>ቅ</item>
+        <item>እ</item>
     </string-array>
 
     <!-- Ethiopic month names as individual strings -->
