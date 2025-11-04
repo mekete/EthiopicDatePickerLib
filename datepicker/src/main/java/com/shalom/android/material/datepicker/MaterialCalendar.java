@@ -107,7 +107,7 @@ public class MaterialCalendar<S> extends Fragment {
         // Ensure pages are clipped properly to prevent page overlap on some devices
         View recyclerView = monthsPager.getChildAt(0);
         if (recyclerView != null) {
-            recyclerView.setClipToPadding(true);
+            recyclerView.setClipToOutline(true);
             if (recyclerView instanceof RecyclerView) {
                 ((RecyclerView) recyclerView).setClipChildren(true);
             }
