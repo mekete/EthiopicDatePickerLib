@@ -168,6 +168,11 @@ public class MaterialCalendar<S> extends Fragment {
     private void setupDaysOfWeekHeader(View root) {
         GridView daysOfWeek = root.findViewById(R.id.mtrl_calendar_days_of_week);
 
+        // Set minimum width to match the date grid: 7 columns × 36dp
+        float density = requireContext().getResources().getDisplayMetrics().density;
+        int minWidth = (int) (7 * 36 * density);  // 252dp minimum
+        daysOfWeek.setMinimumWidth(minWidth);
+
         // Set up the adapter for days of week
         DaysOfWeekAdapter adapter = new DaysOfWeekAdapter(Calendar.SUNDAY);
         daysOfWeek.setAdapter(adapter);

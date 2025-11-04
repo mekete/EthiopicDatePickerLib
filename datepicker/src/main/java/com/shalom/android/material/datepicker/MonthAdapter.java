@@ -51,6 +51,14 @@ public class MonthAdapter extends BaseAdapter {
         this.firstDayOfWeek = Calendar.SUNDAY;
     }
 
+    public Month getMonth() {
+        return month;
+    }
+
+    public DateSelector<?> getDateSelector() {
+        return dateSelector;
+    }
+
     @Override
     public int getCount() {
         return MAXIMUM_GRID_CELLS;

@@ -46,13 +46,27 @@ public class MonthView extends FrameLayout {
             @Nullable DateSelector<?> dateSelector,
             @NonNull CalendarConstraints calendarConstraints,
             @Nullable MonthAdapter.OnDayClickListener onDayClickListener) {
-        adapter = new MonthAdapter(month, dateSelector, calendarConstraints, onDayClickListener);
-        gridView.setAdapter(adapter);
+
+        // Check if we can reuse the existing adapter (same month)
+        if (adapter != null &&
+            adapter.getMonth().equals(month) &&
+            adapter.getDateSelector() == dateSelector) {
+            // Same month, just refresh the data (e.g., selection changed)
+            adapter.notifyDataSetChanged();
+            // Force GridView to maintain its width during refresh
+            gridView.post(() -> gridView.requestLayout());
+        } else {
+            // Different month or first time, create new adapter
+            adapter = new MonthAdapter(month, dateSelector, calendarConstraints, onDayClickListener);
+            gridView.setAdapter(adapter);
+        }
     }
 
     public void notifyDataSetChanged() {
         if (adapter != null) {
             adapter.notifyDataSetChanged();
+            // Force GridView to remeasure and maintain width
+            gridView.post(() -> gridView.requestLayout());
         }
     }
 }
