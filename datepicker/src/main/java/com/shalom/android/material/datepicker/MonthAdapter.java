@@ -125,12 +125,16 @@ public class MonthAdapter extends RecyclerView.Adapter<MonthAdapter.DayViewHolde
     private int getPrimaryColor(Context context) {
         // Get primary color from theme
         android.util.TypedValue typedValue = new android.util.TypedValue();
-        context.getTheme().resolveAttribute(
-                com.google.android.material.R.attr.colorPrimary,
+        boolean resolved = context.getTheme().resolveAttribute(
+                android.R.attr.colorPrimary,
                 typedValue,
                 true
         );
-        return typedValue.data;
+        if (resolved) {
+            return typedValue.data;
+        }
+        // Fallback to a default color if not found
+        return 0xFF6200EE; // Default Material purple
     }
 
     @Override
