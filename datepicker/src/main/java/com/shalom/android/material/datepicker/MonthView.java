@@ -29,10 +29,16 @@ public class MonthView extends FrameLayout {
         gridView.setStretchMode(MaterialCalendarGridView.STRETCH_COLUMN_WIDTH);
         gridView.setSelector(android.R.color.transparent);
 
-        addView(gridView, new LayoutParams(
+        // Calculate minimum width: 7 columns × 36dp/column + padding
+        float density = context.getResources().getDisplayMetrics().density;
+        int minWidth = (int) (7 * 36 * density);  // 252dp minimum
+        gridView.setMinimumWidth(minWidth);
+
+        LayoutParams params = new LayoutParams(
                 LayoutParams.MATCH_PARENT,
                 LayoutParams.MATCH_PARENT
-        ));
+        );
+        addView(gridView, params);
     }
 
     public void setMonth(

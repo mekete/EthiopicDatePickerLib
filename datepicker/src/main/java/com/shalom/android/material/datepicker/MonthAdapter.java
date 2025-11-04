@@ -154,7 +154,19 @@ public class MonthAdapter extends BaseAdapter {
             dayView.setBackground(drawable);
             dayView.setTextColor(Color.WHITE);
         } else {
-            dayView.setBackground(null);
+            // Restore the original ripple background from the theme
+            android.util.TypedValue outValue = new android.util.TypedValue();
+            context.getTheme().resolveAttribute(
+                    android.R.attr.selectableItemBackgroundBorderless,
+                    outValue,
+                    true
+            );
+            if (outValue.resourceId != 0) {
+                dayView.setBackgroundResource(outValue.resourceId);
+            } else {
+                dayView.setBackground(null);
+            }
+
             if (isValid) {
                 dayView.setTextColor(Color.BLACK);
             } else {
