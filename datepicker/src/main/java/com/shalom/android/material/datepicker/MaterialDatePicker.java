@@ -140,49 +140,81 @@ public final class MaterialDatePicker<S> extends DialogFragment {
         }
     }
 
-    @NonNull
-    @Override
-    public Dialog onCreateDialog(@Nullable Bundle bundle) {
-        Context context = requireContext();
+    private MaterialCalendar<S> materialCalendar;
+    private TextView headerSelectionText;
 
-        if (bundle != null) {
-            restoreState(bundle);
+    @Nullable
+    @Override
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
+            @Nullable Bundle savedInstanceState) {
+
+        if (savedInstanceState != null) {
+            restoreState(savedInstanceState);
         }
 
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context);
+        View root = inflater.inflate(R.layout.mtrl_picker_dialog, container, false);
 
-        // Create a simple view for now
-        View contentView = createContentView(context);
+        // Setup header
+        TextView titleTextView = root.findViewById(R.id.mtrl_picker_title_text);
+        headerSelectionText = root.findViewById(R.id.mtrl_picker_header_selection_text);
 
-        builder.setView(contentView);
-        builder.setPositiveButton("OK", (dialog, which) -> {
+        String title = titleText != null ? titleText.toString() :
+                       (titleTextResId != 0 ? getString(titleTextResId) : "Select Date");
+        titleTextView.setText(title);
+
+        updateHeaderSelection();
+
+        // Create and add MaterialCalendar fragment
+        materialCalendar = MaterialCalendar.newInstance(dateSelector, calendarConstraints);
+        materialCalendar.setOnSelectionChangedListener(selection -> {
+            updateHeaderSelection();
+        });
+
+        getChildFragmentManager()
+                .beginTransaction()
+                .replace(R.id.mtrl_calendar_frame, materialCalendar)
+                .commit();
+
+        // Setup buttons
+        View confirmButton = root.findViewById(R.id.confirm_button);
+        View cancelButton = root.findViewById(R.id.cancel_button);
+
+        confirmButton.setOnClickListener(v -> {
             for (MaterialPickerOnPositiveButtonClickListener<? super S> listener :
                     onPositiveButtonClickListeners) {
                 listener.onPositiveButtonClick(getSelection());
             }
-        });
-        builder.setNegativeButton("Cancel", (dialog, which) -> {
-            for (View.OnClickListener listener : onNegativeButtonClickListeners) {
-                listener.onClick(null);
-            }
+            dismiss();
         });
 
-        return builder.create();
+        cancelButton.setOnClickListener(v -> {
+            for (View.OnClickListener listener : onNegativeButtonClickListeners) {
+                listener.onClick(v);
+            }
+            dismiss();
+        });
+
+        return root;
     }
 
-    private View createContentView(Context context) {
-        TextView textView = new TextView(context);
-        textView.setPadding(50, 50, 50, 50);
+    @NonNull
+    @Override
+    public Dialog onCreateDialog(@Nullable Bundle bundle) {
+        Dialog dialog = new Dialog(requireContext(), getTheme());
+        return dialog;
+    }
 
-        String title = titleText != null ? titleText.toString() :
-                       (titleTextResId != 0 ? context.getString(titleTextResId) : "Select Date");
-
-        String selectionText = dateSelector != null ? dateSelector.getSelectionDisplayString() : "No date selected";
-
-        textView.setText(title + "\n\n" + selectionText + "\n\n(Calendar UI coming soon)");
-        textView.setTextSize(16);
-
-        return textView;
+    private void updateHeaderSelection() {
+        if (headerSelectionText != null && dateSelector != null) {
+            String selectionText = dateSelector.getSelectionDisplayString();
+            if (selectionText.isEmpty()) {
+                headerSelectionText.setText("Select a date");
+            } else {
+                headerSelectionText.setText(selectionText);
+            }
+        }
     }
 
     @Override

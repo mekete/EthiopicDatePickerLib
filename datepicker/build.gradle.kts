@@ -48,6 +48,9 @@ dependencies {
     // RecyclerView for calendar grid
     implementation("androidx.recyclerview:recyclerview:1.3.2")
 
+    // ViewPager2 for month scrolling
+    implementation("androidx.viewpager2:viewpager2:1.1.0")
+
     // Fragment for dialog support
     implementation("androidx.fragment:fragment-ktx:1.8.5")
 

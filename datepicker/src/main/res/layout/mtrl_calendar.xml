@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Month/Year navigation header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingBottom="16dp">
+
+        <Button
+            android:id="@+id/mtrl_picker_header_toggle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Jan 2024"
+            android:textAllCaps="false"
+            android:gravity="start|center_vertical"
+            style="?attr/borderlessButtonStyle"/>
+
+        <ImageButton
+            android:id="@+id/month_navigation_previous"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@android:drawable/ic_media_previous"
+            android:contentDescription="Previous month"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
+
+        <ImageButton
+            android:id="@+id/month_navigation_next"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@android:drawable/ic_media_next"
+            android:contentDescription="Next month"
+            android:background="?attr/selectableItemBackgroundBorderless"/>
+    </LinearLayout>
+
+    <!-- Days of week header -->
+    <GridLayout
+        android:id="@+id/mtrl_calendar_days_of_week"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:columnCount="7"
+        android:paddingBottom="8dp">
+        <!-- Days of week will be added programmatically -->
+    </GridLayout>
+
+    <!-- ViewPager for months -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/mtrl_calendar_months"
+        android:layout_width="match_parent"
+        android:layout_height="280dp"/>
+
+</LinearLayout>

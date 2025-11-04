@@ -11,6 +11,10 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.shalom.android.material.datepicker.databinding.FragmentFirstBinding;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 public class FirstFragment extends Fragment {
 
     private FragmentFirstBinding binding;
@@ -33,6 +37,31 @@ public class FirstFragment extends Fragment {
                 NavHostFragment.findNavController(FirstFragment.this)
                         .navigate(R.id.action_FirstFragment_to_SecondFragment)
         );
+
+        binding.buttonShowDatepicker.setOnClickListener(v -> showDatePicker());
+    }
+
+    private void showDatePicker() {
+        MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder(new SingleDateSelector())
+                .setTitleText("Select a date")
+                .setSelection(System.currentTimeMillis())
+                .build();
+
+        datePicker.addOnPositiveButtonClickListener(selection -> {
+            if (selection != null) {
+                // Format Gregorian date
+                SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy", Locale.getDefault());
+                String gregorianDate = dateFormat.format(new Date(selection));
+                binding.textviewSelectedDate.setText("Gregorian: " + gregorianDate);
+
+                // Convert to Ethiopic date
+                EthiopicDateConverter.EthiopicDate ethiopicDate =
+                        EthiopicDateConverter.gregorianToEthiopic(selection);
+                binding.textviewEthiopicDate.setText("Ethiopic: " + ethiopicDate.toString());
+            }
+        });
+
+        datePicker.show(getParentFragmentManager(), "date_picker");
     }
 
     @Override
