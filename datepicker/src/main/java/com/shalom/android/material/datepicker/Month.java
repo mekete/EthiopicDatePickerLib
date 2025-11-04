@@ -5,53 +5,75 @@ import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 
+import org.threeten.extra.chrono.EthiopicChronology;
+import org.threeten.extra.chrono.EthiopicDate;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoField;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
 /**
- * Represents a month in a calendar.
- * Simplified version based on Material Components DatePicker Month class.
+ * Represents a month in the Ethiopic calendar.
+ * Uses threeten-extra library for Ethiopic date support.
  */
 public class Month implements Comparable<Month>, Parcelable {
 
-    private final int month;
-    private final int year;
-    private final Calendar calendar;
+    private final int month; // 1-13 for Ethiopic calendar
+    private final int year;  // Ethiopic year
     private final int daysInMonth;
     private final int daysInWeek = 7;
 
     private Month(int year, int month) {
         this.month = month;
         this.year = year;
-        this.calendar = getCanonicalCalendar();
-        this.calendar.set(Calendar.YEAR, year);
-        this.calendar.set(Calendar.MONTH, month);
-        this.calendar.set(Calendar.DAY_OF_MONTH, 1);
-        this.daysInMonth = this.calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+        // Calculate days in this Ethiopic month
+        // Months 1-12 have 30 days, month 13 (Pagume) has 5 or 6 days
+        if (month >= 1 && month <= 12) {
+            this.daysInMonth = 30;
+        } else if (month == 13) {
+            // Ethiopic leap year: year % 4 == 3
+            this.daysInMonth = ((year % 4) == 3) ? 6 : 5;
+        } else {
+            this.daysInMonth = 30; // Default
+        }
     }
 
     /**
-     * Creates a Month instance for the given year and month.
+     * Creates a Month instance for the given Ethiopic year and month.
+     * @param year Ethiopic year
+     * @param month Ethiopic month (1-13)
      */
     public static Month create(int year, int month) {
         return new Month(year, month);
     }
 
     /**
-     * Creates a Month instance from a timestamp in milliseconds.
+     * Creates a Month instance from a Gregorian timestamp in milliseconds.
+     * Converts Gregorian to Ethiopic calendar.
      */
     public static Month create(long timeInMillis) {
-        Calendar calendar = getCanonicalCalendar();
-        calendar.setTimeInMillis(timeInMillis);
-        return create(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH));
+        // Convert timestamp to LocalDate
+        LocalDate gregorianDate = LocalDate.ofInstant(
+                java.time.Instant.ofEpochMilli(timeInMillis),
+                ZoneId.systemDefault()
+        );
+
+        // Convert to Ethiopic date
+        EthiopicDate ethiopicDate = EthiopicDate.from(gregorianDate);
+
+        return create(ethiopicDate.get(ChronoField.YEAR),
+                     ethiopicDate.get(ChronoField.MONTH_OF_YEAR));
     }
 
     /**
-     * Creates the current month.
+     * Creates the current month in Ethiopic calendar.
      */
     public static Month current() {
-        Calendar today = Calendar.getInstance();
-        return create(today.get(Calendar.YEAR), today.get(Calendar.MONTH));
+        EthiopicDate today = EthiopicDate.now();
+        return create(today.get(ChronoField.YEAR),
+                     today.get(ChronoField.MONTH_OF_YEAR));
     }
 
     public int getMonth() {
@@ -71,47 +93,63 @@ public class Month implements Comparable<Month>, Parcelable {
     }
 
     /**
-     * Returns the timestamp in milliseconds for the first day of this month.
+     * Returns the Gregorian timestamp in milliseconds for the first day of this Ethiopic month.
      */
     public long getTimeInMillis() {
-        return calendar.getTimeInMillis();
+        EthiopicDate ethiopicDate = EthiopicDate.of(year, month, 1);
+        LocalDate gregorianDate = LocalDate.from(ethiopicDate);
+        return gregorianDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
     }
 
     /**
-     * Gets the day of week for a given day in this month.
+     * Gets the day of week for a given day in this Ethiopic month.
      * @param day Day of month (1-based)
      * @return Day of week (Calendar.SUNDAY, Calendar.MONDAY, etc.)
      */
     public int getDayOfWeek(int day) {
-        Calendar cal = getCanonicalCalendar();
-        cal.setTimeInMillis(calendar.getTimeInMillis());
-        cal.set(Calendar.DAY_OF_MONTH, day);
-        return cal.get(Calendar.DAY_OF_WEEK);
+        EthiopicDate ethiopicDate = EthiopicDate.of(year, month, day);
+        LocalDate gregorianDate = LocalDate.from(ethiopicDate);
+
+        // Convert Java 8 DayOfWeek to Calendar constant
+        // Java 8: MONDAY=1, SUNDAY=7
+        // Calendar: SUNDAY=1, MONDAY=2
+        int javaDayOfWeek = gregorianDate.getDayOfWeek().getValue();
+        return (javaDayOfWeek % 7) + 1; // Convert to Calendar constants
     }
 
     /**
-     * Returns the Month that is {@code months} months after this Month.
+     * Returns the Month that is {@code months} months after this Ethiopic Month.
      */
     public Month monthsLater(int months) {
-        Calendar laterCalendar = getCanonicalCalendar();
-        laterCalendar.setTimeInMillis(calendar.getTimeInMillis());
-        laterCalendar.add(Calendar.MONTH, months);
-        return create(laterCalendar.get(Calendar.YEAR), laterCalendar.get(Calendar.MONTH));
+        // Ethiopic calendar has 13 months per year
+        int totalMonths = (year * 13 + month) + months;
+        int newYear = (totalMonths - 1) / 13;
+        int newMonth = ((totalMonths - 1) % 13) + 1;
+        return create(newYear, newMonth);
     }
 
     /**
      * Returns the number of months between this Month and {@code other}.
+     * Calculated based on Ethiopic calendar (13 months per year).
      */
     public int monthsUntil(Month other) {
         int yearDiff = other.year - this.year;
         int monthDiff = other.month - this.month;
-        return yearDiff * 12 + monthDiff;
+        return yearDiff * 13 + monthDiff;
     }
 
-    private static Calendar getCanonicalCalendar() {
-        Calendar calendar = GregorianCalendar.getInstance();
-        calendar.clear();
-        return calendar;
+    /**
+     * Gets the month name for this Ethiopic month.
+     */
+    public String getMonthName() {
+        String[] monthNames = {
+            "Meskerem", "Tikimt", "Hidar", "Tahsas", "Tir", "Yekatit",
+            "Megabit", "Miazia", "Ginbot", "Sene", "Hamle", "Nehase", "Pagume"
+        };
+        if (month >= 1 && month <= 13) {
+            return monthNames[month - 1];
+        }
+        return "";
     }
 
     @Override

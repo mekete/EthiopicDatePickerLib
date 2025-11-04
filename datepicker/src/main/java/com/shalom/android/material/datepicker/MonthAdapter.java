@@ -12,6 +12,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.threeten.extra.chrono.EthiopicDate;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Collection;
 
@@ -64,9 +68,11 @@ public class MonthAdapter extends RecyclerView.Adapter<MonthAdapter.DayViewHolde
             int day = position - firstDayOffset + 1;
             holder.dayView.setText(String.valueOf(day));
 
-            Calendar calendar = Calendar.getInstance();
-            calendar.set(month.getYear(), month.getMonth(), day);
-            long timeInMillis = calendar.getTimeInMillis();
+            // Convert Ethiopic date to Gregorian timestamp
+            EthiopicDate ethiopicDate = EthiopicDate.of(month.getYear(), month.getMonth(), day);
+            LocalDate gregorianDate = LocalDate.from(ethiopicDate);
+            long timeInMillis = gregorianDate.atStartOfDay(ZoneId.systemDefault())
+                    .toInstant().toEpochMilli();
 
             boolean isValid = calendarConstraints.isWithinBounds(timeInMillis);
             holder.dayView.setEnabled(isValid);
@@ -76,11 +82,16 @@ public class MonthAdapter extends RecyclerView.Adapter<MonthAdapter.DayViewHolde
             if (dateSelector != null) {
                 Collection<Long> selectedDays = dateSelector.getSelectedDays();
                 for (Long selectedDay : selectedDays) {
-                    Calendar selectedCal = Calendar.getInstance();
-                    selectedCal.setTimeInMillis(selectedDay);
-                    if (selectedCal.get(Calendar.YEAR) == month.getYear() &&
-                        selectedCal.get(Calendar.MONTH) == month.getMonth() &&
-                        selectedCal.get(Calendar.DAY_OF_MONTH) == day) {
+                    // Convert selected day timestamp to Ethiopic date
+                    LocalDate selectedGregorian = LocalDate.ofInstant(
+                            java.time.Instant.ofEpochMilli(selectedDay),
+                            ZoneId.systemDefault()
+                    );
+                    EthiopicDate selectedEthiopic = EthiopicDate.from(selectedGregorian);
+
+                    if (selectedEthiopic.getProlepticYear() == month.getYear() &&
+                        selectedEthiopic.getMonthValue() == month.getMonth() &&
+                        selectedEthiopic.getDayOfMonth() == day) {
                         isSelected = true;
                         break;
                     }

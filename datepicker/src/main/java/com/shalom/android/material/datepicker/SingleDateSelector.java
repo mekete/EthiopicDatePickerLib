@@ -5,11 +5,12 @@ import android.os.Parcel;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import java.text.SimpleDateFormat;
+import org.threeten.extra.chrono.EthiopicDate;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
-import java.util.Locale;
 
 /**
  * A {@link DateSelector} that uses a {@link Long} for its selection state.
@@ -48,8 +49,22 @@ public class SingleDateSelector implements DateSelector<Long> {
         if (selectedItem == null) {
             return "";
         }
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MMM d, yyyy", Locale.getDefault());
-        return dateFormat.format(new Date(selectedItem));
+
+        // Convert timestamp to Ethiopic date
+        LocalDate gregorianDate = LocalDate.ofInstant(
+                java.time.Instant.ofEpochMilli(selectedItem),
+                ZoneId.systemDefault()
+        );
+        EthiopicDate ethiopicDate = EthiopicDate.from(gregorianDate);
+
+        // Format as "Meskerem 5, 2017" (Ethiopic format)
+        String[] monthNames = {
+            "Meskerem", "Tikimt", "Hidar", "Tahsas", "Tir", "Yekatit",
+            "Megabit", "Miazia", "Ginbot", "Sene", "Hamle", "Nehase", "Pagume"
+        };
+
+        String monthName = monthNames[ethiopicDate.getMonthValue() - 1];
+        return monthName + " " + ethiopicDate.getDayOfMonth() + ", " + ethiopicDate.getProlepticYear();
     }
 
     @Override

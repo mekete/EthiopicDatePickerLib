@@ -44,4 +44,32 @@
     <string name="day_thursday">Thu</string>
     <string name="day_friday">Fri</string>
     <string name="day_saturday">Sat</string>
+
+    <!-- Ethiopian Month Names (English) -->
+    <string-array name="ethiopian_months">
+        <item>Meskerem</item>
+        <item>Tikimt</item>
+        <item>Hidar</item>
+        <item>Tahsas</item>
+        <item>Tir</item>
+        <item>Yekatit</item>
+        <item>Megabit</item>
+        <item>Miazia</item>
+        <item>Ginbot</item>
+        <item>Sene</item>
+        <item>Hamle</item>
+        <item>Nehase</item>
+        <item>Pagume</item>
+    </string-array>
+
+    <!-- Weekday Names (Short) -->
+    <string-array name="weekday_names_short">
+        <item>Mon</item>
+        <item>Tue</item>
+        <item>Wed</item>
+        <item>Thu</item>
+        <item>Fri</item>
+        <item>Sat</item>
+        <item>Sun</item>
+    </string-array>
 </resources>
