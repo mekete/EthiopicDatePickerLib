@@ -103,6 +103,26 @@ public class MaterialCalendar<S> extends Fragment {
         );
         monthsPager.setAdapter(pagerAdapter);
 
+        // Configure ViewPager2 to prevent adjacent pages from being visible
+        // Ensure pages are clipped properly to prevent page overlap on some devices
+        View recyclerView = monthsPager.getChildAt(0);
+        if (recyclerView != null) {
+            recyclerView.setClipToPadding(true);
+            if (recyclerView instanceof RecyclerView) {
+                ((RecyclerView) recyclerView).setClipChildren(true);
+            }
+        }
+
+        // Add page transformer to ensure pages are properly separated
+        monthsPager.setPageTransformer((page, position) -> {
+            // Only show the current page, hide adjacent pages
+            if (Math.abs(position) >= 1.0f) {
+                page.setAlpha(0f);
+            } else {
+                page.setAlpha(1f);
+            }
+        });
+
         // Set current month
         int currentPosition = pagerAdapter.getPositionForMonth(currentMonth);
         monthsPager.setCurrentItem(currentPosition, false);
