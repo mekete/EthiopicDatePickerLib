@@ -155,6 +155,13 @@ public class MaterialCalendar<S> extends Fragment {
 
         monthYearButton.setOnClickListener(v -> toggleYearPicker());
 
+        // Fix alignment issue: Force both GridViews to remeasure after initial layout
+        // This ensures they calculate column widths with the parent's final width
+        root.post(() -> {
+            daysOfWeekHeader.requestLayout();
+            monthsPager.requestLayout();
+        });
+
         return root;
     }
 
