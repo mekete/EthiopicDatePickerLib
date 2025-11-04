@@ -1,8 +1,7 @@
 package com.shalom.android.material.datepicker;
 
 import android.content.Context;
-import android.view.LayoutInflater;
-import android.view.View;
+import android.view.Gravity;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
@@ -19,13 +18,16 @@ public class MonthView extends FrameLayout {
     public MonthView(@NonNull Context context) {
         super(context);
 
-        // Inflate the MaterialCalendarGridView layout
-        LayoutInflater inflater = LayoutInflater.from(context);
-        gridView = (MaterialCalendarGridView) inflater.inflate(
-                R.layout.mtrl_calendar_month,
-                this,
-                false
-        );
+        // Directly instantiate MaterialCalendarGridView to avoid ClassCastException
+        // from layout inflation conflicts with Material Components library
+        gridView = new MaterialCalendarGridView(context);
+        gridView.setId(R.id.month_grid);
+        gridView.setNumColumns(7);
+        gridView.setGravity(Gravity.CENTER);
+        gridView.setHorizontalSpacing(0);
+        gridView.setVerticalSpacing(0);
+        gridView.setStretchMode(MaterialCalendarGridView.STRETCH_COLUMN_WIDTH);
+        gridView.setSelector(android.R.color.transparent);
 
         addView(gridView, new LayoutParams(
                 LayoutParams.MATCH_PARENT,
