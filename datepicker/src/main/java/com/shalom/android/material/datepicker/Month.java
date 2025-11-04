@@ -54,10 +54,10 @@ public class Month implements Comparable<Month>, Parcelable {
      * Converts Gregorian to Ethiopic calendar.
      */
     public static Month create(long timeInMillis) {
-        // Convert timestamp to LocalDate
+        // Convert timestamp to LocalDate using UTC to avoid timezone issues
         LocalDate gregorianDate = LocalDate.ofInstant(
                 java.time.Instant.ofEpochMilli(timeInMillis),
-                ZoneId.systemDefault()
+                ZoneId.of("UTC")
         );
 
         // Convert to Ethiopic date
@@ -71,7 +71,8 @@ public class Month implements Comparable<Month>, Parcelable {
      * Creates the current month in Ethiopic calendar.
      */
     public static Month current() {
-        EthiopicDate today = EthiopicDate.now();
+        // Use UTC to get current date to avoid timezone issues
+        EthiopicDate today = EthiopicDate.now(ZoneId.of("UTC"));
         return create(today.get(ChronoField.YEAR),
                      today.get(ChronoField.MONTH_OF_YEAR));
     }
@@ -98,7 +99,8 @@ public class Month implements Comparable<Month>, Parcelable {
     public long getTimeInMillis() {
         EthiopicDate ethiopicDate = EthiopicDate.of(year, month, 1);
         LocalDate gregorianDate = LocalDate.from(ethiopicDate);
-        return gregorianDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        // Use UTC to avoid timezone issues when converting to timestamp
+        return gregorianDate.atStartOfDay(ZoneId.of("UTC")).toInstant().toEpochMilli();
     }
 
     /**
