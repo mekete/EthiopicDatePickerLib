@@ -71,10 +71,10 @@ public class MonthAdapter extends RecyclerView.Adapter<MonthAdapter.DayViewHolde
             int day = position - firstDayOffset + 1;
             holder.dayView.setText(String.valueOf(day));
 
-            // Convert Ethiopic date to Gregorian timestamp
+            // Convert Ethiopic date to Gregorian timestamp using UTC to avoid timezone issues
             EthiopicDate ethiopicDate = EthiopicDate.of(month.getYear(), month.getMonth(), day);
             LocalDate gregorianDate = LocalDate.from(ethiopicDate);
-            long timeInMillis = gregorianDate.atStartOfDay(ZoneId.systemDefault())
+            long timeInMillis = gregorianDate.atStartOfDay(ZoneId.of("UTC"))
                     .toInstant().toEpochMilli();
 
             boolean isValid = calendarConstraints.isWithinBounds(timeInMillis);
@@ -85,11 +85,9 @@ public class MonthAdapter extends RecyclerView.Adapter<MonthAdapter.DayViewHolde
             if (dateSelector != null) {
                 Collection<Long> selectedDays = dateSelector.getSelectedDays();
                 for (Long selectedDay : selectedDays) {
-                    // Convert selected day timestamp to Ethiopic date
-//                    LocalDate selectedGregorian = LocalDate.now();
-
+                    // Convert selected day timestamp to Ethiopic date using UTC to avoid timezone issues
                     LocalDate selectedGregorian = Instant.ofEpochMilli(selectedDay)
-                            .atZone(ZoneId.systemDefault())
+                            .atZone(ZoneId.of("UTC"))
                             .toLocalDate();
                     EthiopicDate selectedEthiopic = EthiopicDate.from(selectedGregorian);
 
