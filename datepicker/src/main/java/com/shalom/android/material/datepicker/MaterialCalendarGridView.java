@@ -45,6 +45,12 @@ public class MaterialCalendarGridView extends GridView {
                     MeasureSpec.AT_MOST
             );
             super.onMeasure(widthMeasureSpec, expandSpec);
+
+            // Force width to match parent to prevent shrinking
+            // This ensures the grid maintains full width even after data changes
+            int width = MeasureSpec.getSize(widthMeasureSpec);
+            int height = getMeasuredHeight();
+            setMeasuredDimension(width, height);
         } else {
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         }
