@@ -1,77 +1,66 @@
 package com.shalom.android.material.datepicker;
 
 import android.os.Bundle;
-
-import com.google.android.material.snackbar.Snackbar;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.view.View;
-
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
-
-import com.shalom.android.material.datepicker.databinding.ActivityMainBinding;
-
-import android.view.Menu;
-import android.view.MenuItem;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
-    private AppBarConfiguration appBarConfiguration;
-    private ActivityMainBinding binding;
+    private TextView selectedDateTextView;
+    private SimpleDateFormat dateFormat;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+        // Initialize date format
+        dateFormat = new SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault());
 
-        setSupportActionBar(binding.toolbar);
+        // Find views
+        Button pickDateButton = findViewById(R.id.pick_date_button);
+        selectedDateTextView = findViewById(R.id.selected_date_text);
 
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
-        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
-
-        binding.fab.setOnClickListener(new View.OnClickListener() {
+        // Set up date picker button
+        pickDateButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAnchorView(R.id.fab)
-                        .setAction("Action", null).show();
+            public void onClick(View v) {
+                showDatePicker();
             }
         });
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
+    private void showDatePicker() {
+        // Create a single date selector
+        SingleDateSelector dateSelector = new SingleDateSelector();
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+        // Build the date picker
+        MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder(dateSelector)
+                .setTitleText("Select a date")
+                .setSelection(System.currentTimeMillis())
+                .build();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
+        // Add listener for positive button click
+        datePicker.addOnPositiveButtonClickListener(selection -> {
+            if (selection != null) {
+                String formattedDate = dateFormat.format(new Date(selection));
+                selectedDateTextView.setText("Selected: " + formattedDate);
+            }
+        });
 
-        return super.onOptionsItemSelected(item);
-    }
+        // Add cancel listener
+        datePicker.addOnCancelListener(dialog -> {
+            selectedDateTextView.setText("Date selection cancelled");
+        });
 
-    @Override
-    public boolean onSupportNavigateUp() {
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        return NavigationUI.navigateUp(navController, appBarConfiguration)
-                || super.onSupportNavigateUp();
+        // Show the date picker
+        datePicker.show(getSupportFragmentManager(), "date_picker");
     }
 }
