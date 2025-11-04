@@ -103,8 +103,9 @@ public final class CalendarConstraints implements Parcelable {
      */
     public static final class Builder {
 
-        private static final long DEFAULT_START = Month.create(1900, 0).getTimeInMillis();
-        private static final long DEFAULT_END = Month.create(2100, 11).getTimeInMillis();
+        // Default range for Ethiopic calendar: 1900-2100, months 1-13
+        private static final long DEFAULT_START = Month.create(1900, 1).getTimeInMillis();
+        private static final long DEFAULT_END = Month.create(2100, 13).getTimeInMillis();
 
         private long start = DEFAULT_START;
         private long end = DEFAULT_END;

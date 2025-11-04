@@ -141,7 +141,8 @@ public class MaterialCalendar<S> extends Fragment {
     private void setupDaysOfWeekHeader(View root) {
         GridLayout daysOfWeek = root.findViewById(R.id.mtrl_calendar_days_of_week);
 
-        String[] dayNames = {"S", "M", "T", "W", "T", "F", "S"};
+        // Use weekday names from string resources (supports localization)
+        String[] dayNames = requireContext().getResources().getStringArray(R.array.weekday_names_short);
 
         for (String dayName : dayNames) {
             TextView dayView = new TextView(requireContext());
@@ -157,11 +158,14 @@ public class MaterialCalendar<S> extends Fragment {
     }
 
     private void updateMonthYearDisplay() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(currentMonth.getYear(), currentMonth.getMonth(), 1);
+        // Display Ethiopic month name and year
+        String[] monthNames = requireContext().getResources().getStringArray(R.array.ethiopian_months);
+        String monthName = (currentMonth.getMonth() >= 1 && currentMonth.getMonth() <= 13)
+                ? monthNames[currentMonth.getMonth() - 1]
+                : "";
 
-        SimpleDateFormat format = new SimpleDateFormat("MMMM yyyy", Locale.getDefault());
-        monthYearButton.setText(format.format(calendar.getTime()));
+        String displayText = monthName + " " + currentMonth.getYear();
+        monthYearButton.setText(displayText);
 
         // Update button states
         int currentPosition = monthsPager.getCurrentItem();
