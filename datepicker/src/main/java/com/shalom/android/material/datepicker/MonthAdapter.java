@@ -30,6 +30,7 @@ public class MonthAdapter extends RecyclerView.Adapter<MonthAdapter.DayViewHolde
         void onDayClick(long day);
     }
 
+
     public MonthAdapter(
             @NonNull Month month,
             @Nullable DateSelector<?> dateSelector,
