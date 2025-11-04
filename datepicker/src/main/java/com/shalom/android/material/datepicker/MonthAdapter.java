@@ -7,28 +7,28 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.RecyclerView;
 
 import org.threeten.extra.chrono.EthiopicDate;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.temporal.ChronoField;
-import java.time.temporal.TemporalField;
 import java.util.Calendar;
 import java.util.Collection;
 
 /**
- * Adapter for displaying days in a month grid.
+ * Adapter for displaying days in a month grid using GridView.
  */
-public class MonthAdapter extends RecyclerView.Adapter<MonthAdapter.DayViewHolder> {
+public class MonthAdapter extends BaseAdapter {
 
     private static final String TAG = "MonthAdapter";
+    private static final int MAXIMUM_GRID_CELLS = 42; // 6 rows * 7 days
+
     private final Month month;
     private final DateSelector<?> dateSelector;
     private final CalendarConstraints calendarConstraints;
@@ -38,7 +38,6 @@ public class MonthAdapter extends RecyclerView.Adapter<MonthAdapter.DayViewHolde
     public interface OnDayClickListener {
         void onDayClick(long day);
     }
-
 
     public MonthAdapter(
             @NonNull Month month,
@@ -52,49 +51,66 @@ public class MonthAdapter extends RecyclerView.Adapter<MonthAdapter.DayViewHolde
         this.firstDayOfWeek = Calendar.SUNDAY;
     }
 
-    @NonNull
     @Override
-    public DayViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        TextView dayView = (TextView) LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.mtrl_calendar_day, parent, false);
-        return new DayViewHolder(dayView);
+    public int getCount() {
+        return MAXIMUM_GRID_CELLS;
     }
 
     @Override
-    public void onBindViewHolder(@NonNull DayViewHolder holder, int position) {
+    public Object getItem(int position) {
+        if (withinMonth(position)) {
+            return positionToDay(position);
+        }
+        return null;
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
+
+    @Override
+    public boolean hasStableIds() {
+        return true;
+    }
+
+    @Override
+    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+        Context context = parent.getContext();
+        TextView dayView = (TextView) convertView;
+
+        if (dayView == null) {
+            LayoutInflater inflater = LayoutInflater.from(context);
+            dayView = (TextView) inflater.inflate(R.layout.mtrl_calendar_day, parent, false);
+        }
+
         int firstDayOffset = getFirstDayOffset();
 
-        Log.e(TAG, "onBindViewHolder:aaa  firstDayOffset: " +firstDayOffset );
-        Log.e(TAG, "onBindViewHolder:aaa  position: " +position);
-        Log.e(TAG, "onBindViewHolder:aaa  month.getDaysInMonth(): " +month.getDaysInMonth());
-        Log.e(TAG, "onBindViewHolder:aaa  month.getDaysInMonth(): " +month.getDayOfWeek(1));
-        Log.e(TAG, "onBindViewHolder:aaa  month.getDaysInMonth(): " +month.getMonth());
-        Log.e(TAG, "onBindViewHolder:aaa  month.getDaysInMonth(): " +month.getYear());
-
         if (position < firstDayOffset || position >= firstDayOffset + month.getDaysInMonth()) {
-            // Empty cell
-            holder.dayView.setText("");
-            holder.dayView.setEnabled(false);
-            holder.dayView.setOnClickListener(null);
+            // Empty cell - outside the month
+            dayView.setText("");
+            dayView.setEnabled(false);
+            dayView.setVisibility(View.INVISIBLE);
+            dayView.setOnClickListener(null);
         } else {
+            dayView.setVisibility(View.VISIBLE);
             int day = position - firstDayOffset + 1;
-            holder.dayView.setText(String.valueOf(day));
+            dayView.setText(String.valueOf(day));
 
-            // Convert Ethiopic date to Gregorian timestamp using UTC to avoid timezone issues
+            // Convert Ethiopic date to Gregorian timestamp
             EthiopicDate ethiopicDate = EthiopicDate.of(month.getYear(), month.getMonth(), day);
             LocalDate gregorianDate = LocalDate.from(ethiopicDate);
             long timeInMillis = gregorianDate.atStartOfDay(Month.TIME_ZONE)
                     .toInstant().toEpochMilli();
 
             boolean isValid = calendarConstraints.isWithinBounds(timeInMillis);
-            holder.dayView.setEnabled(isValid);
+            dayView.setEnabled(isValid);
 
             // Check if this day is selected
             boolean isSelected = false;
             if (dateSelector != null) {
                 Collection<Long> selectedDays = dateSelector.getSelectedDays();
                 for (Long selectedDay : selectedDays) {
-                    // Convert selected day timestamp to Ethiopic date using UTC to avoid timezone issues
                     LocalDate selectedGregorian = Instant.ofEpochMilli(selectedDay)
                             .atZone(Month.TIME_ZONE)
                             .toLocalDate();
@@ -102,7 +118,7 @@ public class MonthAdapter extends RecyclerView.Adapter<MonthAdapter.DayViewHolde
 
                     if (selectedEthiopic.get(ChronoField.YEAR) == month.getYear() &&
                         selectedEthiopic.get(ChronoField.MONTH_OF_YEAR) == month.getMonth() &&
-                        selectedEthiopic.get(ChronoField.DAY_OF_MONTH)  == (day)) {
+                        selectedEthiopic.get(ChronoField.DAY_OF_MONTH) == day) {
                         isSelected = true;
                         break;
                     }
@@ -110,19 +126,21 @@ public class MonthAdapter extends RecyclerView.Adapter<MonthAdapter.DayViewHolde
             }
 
             // Style the day view
-            styleDayView(holder.dayView, isSelected, isValid);
+            styleDayView(dayView, isSelected, isValid);
 
             if (isValid) {
                 final long clickedDay = timeInMillis;
-                holder.dayView.setOnClickListener(v -> {
+                dayView.setOnClickListener(v -> {
                     if (onDayClickListener != null) {
                         onDayClickListener.onDayClick(clickedDay);
                     }
                 });
             } else {
-                holder.dayView.setOnClickListener(null);
+                dayView.setOnClickListener(null);
             }
         }
+
+        return dayView;
     }
 
     private void styleDayView(TextView dayView, boolean isSelected, boolean isValid) {
@@ -146,7 +164,6 @@ public class MonthAdapter extends RecyclerView.Adapter<MonthAdapter.DayViewHolde
     }
 
     private int getPrimaryColor(Context context) {
-        // Get primary color from theme
         android.util.TypedValue typedValue = new android.util.TypedValue();
         boolean resolved = context.getTheme().resolveAttribute(
                 android.R.attr.colorPrimary,
@@ -156,14 +173,7 @@ public class MonthAdapter extends RecyclerView.Adapter<MonthAdapter.DayViewHolde
         if (resolved) {
             return typedValue.data;
         }
-        // Fallback to a default color if not found
         return 0xFF6200EE; // Default Material purple
-    }
-
-    @Override
-    public int getItemCount() {
-        // 6 rows * 7 days = 42 cells
-        return 42;
     }
 
     private int getFirstDayOffset() {
@@ -175,12 +185,38 @@ public class MonthAdapter extends RecyclerView.Adapter<MonthAdapter.DayViewHolde
         return offset;
     }
 
-    static class DayViewHolder extends RecyclerView.ViewHolder {
-        final TextView dayView;
+    /**
+     * Returns the position in the grid where the first day of the month appears.
+     */
+    public int firstPositionInMonth() {
+        return getFirstDayOffset();
+    }
 
-        DayViewHolder(@NonNull TextView dayView) {
-            super(dayView);
-            this.dayView = dayView;
-        }
+    /**
+     * Returns the position in the grid where the last day of the month appears.
+     */
+    public int lastPositionInMonth() {
+        return getFirstDayOffset() + month.getDaysInMonth() - 1;
+    }
+
+    /**
+     * Returns true if the position is within the bounds of the month.
+     */
+    public boolean withinMonth(int position) {
+        return position >= firstPositionInMonth() && position <= lastPositionInMonth();
+    }
+
+    /**
+     * Converts a grid position to a day number (1-based).
+     */
+    public int positionToDay(int position) {
+        return position - firstPositionInMonth() + 1;
+    }
+
+    /**
+     * Converts a day number (1-based) to a grid position.
+     */
+    public int dayToPosition(int day) {
+        return firstPositionInMonth() + day - 1;
     }
 }

@@ -42,14 +42,18 @@
     </LinearLayout>
 
     <!-- Days of week header -->
-    <GridLayout
+    <GridView
         android:id="@+id/mtrl_calendar_days_of_week"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:columnCount="7"
+        android:numColumns="7"
+        android:gravity="center"
+        android:horizontalSpacing="0dp"
+        android:verticalSpacing="0dp"
+        android:stretchMode="columnWidth"
+        android:listSelector="@android:color/transparent"
         android:paddingBottom="8dp">
-        <!-- Days of week will be added programmatically -->
-    </GridLayout>
+    </GridView>
 
     <!-- Container for calendar and year picker -->
     <FrameLayout
