@@ -54,7 +54,7 @@ public class SingleDateSelector implements DateSelector<Long> {
 
         // Convert timestamp to Ethiopic date using UTC to avoid timezone issues
         LocalDate gregorianDate = Instant.ofEpochMilli(selectedItem)
-                .atZone(ZoneId.of("UTC"))
+                .atZone(Month.TIME_ZONE)
                 .toLocalDate();
         EthiopicDate ethiopicDate = EthiopicDate.from(gregorianDate);
 

@@ -5,14 +5,13 @@ import android.os.Parcelable;
 
 import androidx.annotation.NonNull;
 
-import org.threeten.extra.chrono.EthiopicChronology;
 import org.threeten.extra.chrono.EthiopicDate;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoField;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
+import java.time.temporal.ChronoUnit;
 
 /**
  * Represents a month in the Ethiopic calendar.
@@ -20,164 +19,92 @@ import java.util.GregorianCalendar;
  */
 public class Month implements Comparable<Month>, Parcelable {
 
-    private final int month; // 1-13 for Ethiopic calendar
-    private final int year;  // Ethiopic year
-    private final int daysInMonth;
-    private final int daysInWeek = 7;
+//    static final ZoneId TIME_ZONE = ZoneId.of("Africa/Nairobi");
+    static final ZoneId TIME_ZONE = ZoneId.systemDefault();
+//    public static final ZoneId TIME_ZONE = ZoneId.of("UTC");//ZoneId.systemDefault();//
+
+    private final EthiopicDate ethiopicMonthStart;
 
     private Month(int year, int month) {
-        this.month = month;
-        this.year = year;
-        // Calculate days in this Ethiopic month
-        // Months 1-12 have 30 days, month 13 (Pagume) has 5 or 6 days
-        if (month >= 1 && month <= 12) {
-            this.daysInMonth = 30;
-        } else if (month == 13) {
-            // Ethiopic leap year: year % 4 == 3
-            this.daysInMonth = ((year % 4) == 3) ? 6 : 5;
-        } else {
-            this.daysInMonth = 30; // Default
-        }
+        this.ethiopicMonthStart = EthiopicDate.of(year, month, 1);
     }
 
-    /**
-     * Creates a Month instance for the given Ethiopic year and month.
-     * @param year Ethiopic year
-     * @param month Ethiopic month (1-13)
-     */
+    private Month(EthiopicDate monthStartDate) {
+        this.ethiopicMonthStart = monthStartDate.with(ChronoField.DAY_OF_MONTH, 1);
+    }
+
     public static Month create(int year, int month) {
         return new Month(year, month);
     }
 
-    /**
-     * Creates a Month instance from a Gregorian timestamp in milliseconds.
-     * Converts Gregorian to Ethiopic calendar.
-     */
     public static Month create(long timeInMillis) {
-        // Convert timestamp to LocalDate using UTC to avoid timezone issues
-        LocalDate gregorianDate = LocalDate.ofInstant(
-                java.time.Instant.ofEpochMilli(timeInMillis),
-                ZoneId.of("UTC")
+        EthiopicDate ethiopicDate = EthiopicDate.from(
+                Instant.ofEpochMilli(timeInMillis).atZone(TIME_ZONE)
         );
-
-        // Convert to Ethiopic date
-        EthiopicDate ethiopicDate = EthiopicDate.from(gregorianDate);
-
-        return create(ethiopicDate.get(ChronoField.YEAR),
-                     ethiopicDate.get(ChronoField.MONTH_OF_YEAR));
+        return new Month(ethiopicDate);
     }
 
-    /**
-     * Creates the current month in Ethiopic calendar.
-     */
+    /** Creates the current month in Ethiopic calendar. */
     public static Month current() {
-        // Use UTC to get current date to avoid timezone issues
-        EthiopicDate today = EthiopicDate.now(ZoneId.of("UTC"));
-        return create(today.get(ChronoField.YEAR),
-                     today.get(ChronoField.MONTH_OF_YEAR));
+        EthiopicDate ethiopicDate = EthiopicDate.now(TIME_ZONE);
+        return new Month(ethiopicDate);
+    }
+
+    public long getTimeInMillis() {
+        LocalDate gregorianDate = LocalDate.from(ethiopicMonthStart);
+        return gregorianDate.atStartOfDay(TIME_ZONE).toInstant().toEpochMilli();
     }
 
     public int getMonth() {
-        return month;
+        return ethiopicMonthStart.get(ChronoField.MONTH_OF_YEAR);
     }
 
     public int getYear() {
-        return year;
+        return ethiopicMonthStart.get(ChronoField.YEAR);
     }
 
     public int getDaysInMonth() {
-        return daysInMonth;
+        return ethiopicMonthStart.lengthOfMonth();
     }
 
-    public int getDaysInWeek() {
-        return daysInWeek;
-    }
-
-    /**
-     * Returns the Gregorian timestamp in milliseconds for the first day of this Ethiopic month.
-     */
-    public long getTimeInMillis() {
-        EthiopicDate ethiopicDate = EthiopicDate.of(year, month, 1);
-        LocalDate gregorianDate = LocalDate.from(ethiopicDate);
-        // Use UTC to avoid timezone issues when converting to timestamp
-        return gregorianDate.atStartOfDay(ZoneId.of("UTC")).toInstant().toEpochMilli();
-    }
-
-    /**
-     * Gets the day of week for a given day in this Ethiopic month.
-     * @param day Day of month (1-based)
-     * @return Day of week (Calendar.SUNDAY, Calendar.MONDAY, etc.)
-     */
     public int getDayOfWeek(int day) {
-        EthiopicDate ethiopicDate = EthiopicDate.of(year, month, day);
-        LocalDate gregorianDate = LocalDate.from(ethiopicDate);
-
-        // Convert Java 8 DayOfWeek to Calendar constant
-        // Java 8: MONDAY=1, SUNDAY=7
-        // Calendar: SUNDAY=1, MONDAY=2
-        int javaDayOfWeek = gregorianDate.getDayOfWeek().getValue();
-        return (javaDayOfWeek % 7) + 1; // Convert to Calendar constants
+        EthiopicDate updatedDate = ethiopicMonthStart.with(ChronoField.DAY_OF_MONTH, day);
+        return updatedDate.get(ChronoField.DAY_OF_WEEK);
     }
 
-    /**
-     * Returns the Month that is {@code months} months after this Ethiopic Month.
-     */
     public Month monthsLater(int months) {
-        // Ethiopic calendar has 13 months per year
-        int totalMonths = (year * 13 + month) + months;
-        int newYear = (totalMonths - 1) / 13;
-        int newMonth = ((totalMonths - 1) % 13) + 1;
-        return create(newYear, newMonth);
+        EthiopicDate nextMonth = ethiopicMonthStart.plus(months, ChronoUnit.MONTHS)
+                .with(ChronoField.DAY_OF_MONTH, 1);
+        return new Month(nextMonth);
     }
 
-    /**
-     * Returns the number of months between this Month and {@code other}.
-     * Calculated based on Ethiopic calendar (13 months per year).
-     */
-    public int monthsUntil(Month other) {
-        int yearDiff = other.year - this.year;
-        int monthDiff = other.month - this.month;
-        return yearDiff * 13 + monthDiff;
+    public int monthsUntil(Month end) {
+        return (int) ethiopicMonthStart.until(end.ethiopicMonthStart, ChronoUnit.MONTHS);
     }
 
-    /**
-     * Gets the month name for this Ethiopic month.
-     */
-    public String getMonthName() {
-        String[] monthNames = {
-            "Meskerem", "Tikimt", "Hidar", "Tahsas", "Tir", "Yekatit",
-            "Megabit", "Miazia", "Ginbot", "Sene", "Hamle", "Nehase", "Pagume"
-        };
-        if (month >= 1 && month <= 13) {
-            return monthNames[month - 1];
-        }
-        return "";
-    }
-
+    // ===================== Comparable =====================
     @Override
     public int compareTo(@NonNull Month other) {
-        int yearComparison = Integer.compare(this.year, other.year);
-        if (yearComparison != 0) {
-            return yearComparison;
-        }
-        return Integer.compare(this.month, other.month);
+        int yearComparison = Integer.compare(this.getYear(), other.getYear());
+        if (yearComparison != 0) return yearComparison;
+        return Integer.compare(this.getMonth(), other.getMonth());
     }
 
+    // ===================== Equals & HashCode =====================
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Month)) return false;
-        Month that = (Month) o;
-        return month == that.month && year == that.year;
+        Month other = (Month) o;
+        return this.getYear() == other.getYear() && this.getMonth() == other.getMonth();
     }
 
     @Override
     public int hashCode() {
-        return 31 * year + month;
+        return 31 * getYear() + getMonth();
     }
 
-    // Parcelable implementation
-
+    // ===================== Parcelable =====================
     @Override
     public int describeContents() {
         return 0;
@@ -185,8 +112,8 @@ public class Month implements Comparable<Month>, Parcelable {
 
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
-        dest.writeInt(year);
-        dest.writeInt(month);
+        dest.writeInt(getYear());
+        dest.writeInt(getMonth());
     }
 
     public static final Creator<Month> CREATOR = new Creator<Month>() {
