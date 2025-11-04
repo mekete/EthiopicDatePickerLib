@@ -199,8 +199,20 @@ public class MaterialCalendar<S> extends Fragment {
         dateSelector.select(day);
 
         // Refresh the current month view to show selection
+        // Instead of notifyDataSetChanged which triggers a full rebind and causes
+        // the GridView to remeasure and shrink, we directly access the current
+        // MonthView and refresh only its data
         int currentPosition = monthsPager.getCurrentItem();
-        pagerAdapter.notifyDataSetChanged(currentPosition);
+
+        // Get the RecyclerView from ViewPager2 and find the current ViewHolder
+        RecyclerView recyclerView = (RecyclerView) monthsPager.getChildAt(0);
+        if (recyclerView != null) {
+            RecyclerView.ViewHolder viewHolder = recyclerView.findViewHolderForAdapterPosition(currentPosition);
+            if (viewHolder instanceof MonthsPagerAdapter.MonthViewHolder) {
+                MonthsPagerAdapter.MonthViewHolder monthHolder = (MonthsPagerAdapter.MonthViewHolder) viewHolder;
+                monthHolder.monthView.notifyDataSetChanged();
+            }
+        }
 
         // Notify listener
         if (selectionChangedListener != null) {
