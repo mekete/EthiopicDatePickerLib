@@ -5,7 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.GridLayout;
+import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -37,7 +37,7 @@ public class MaterialCalendar<S> extends Fragment {
     private MonthsPagerAdapter pagerAdapter;
     private RecyclerView yearPicker;
     private YearGridAdapter yearAdapter;
-    private GridLayout daysOfWeekHeader;
+    private GridView daysOfWeekHeader;
     private Button monthYearButton;
     private ImageButton previousButton;
     private ImageButton nextButton;
@@ -159,22 +159,12 @@ public class MaterialCalendar<S> extends Fragment {
     }
 
     private void setupDaysOfWeekHeader(View root) {
-        GridLayout daysOfWeek = root.findViewById(R.id.mtrl_calendar_days_of_week);
+        GridView daysOfWeek = root.findViewById(R.id.mtrl_calendar_days_of_week);
 
-        // Use weekday names from string resources (supports localization)
-        String[] dayNames = requireContext().getResources().getStringArray(R.array.weekday_names_short);
-
-        for (String dayName : dayNames) {
-            TextView dayView = new TextView(requireContext());
-            dayView.setText(dayName);
-            dayView.setGravity(android.view.Gravity.CENTER);
-            dayView.setTextSize(12);
-            dayView.setLayoutParams(new GridLayout.LayoutParams(
-                    GridLayout.spec(GridLayout.UNDEFINED, 1f),
-                    GridLayout.spec(GridLayout.UNDEFINED, 1f)
-            ));
-            daysOfWeek.addView(dayView);
-        }
+        // Set up the adapter for days of week
+        DaysOfWeekAdapter adapter = new DaysOfWeekAdapter(Calendar.SUNDAY);
+        daysOfWeek.setAdapter(adapter);
+        daysOfWeek.setEnabled(false); // Make header non-interactive
     }
 
     private void updateMonthYearDisplay() {
