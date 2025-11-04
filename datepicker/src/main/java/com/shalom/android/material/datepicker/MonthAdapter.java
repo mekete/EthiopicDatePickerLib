@@ -14,8 +14,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.threeten.extra.chrono.EthiopicDate;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalField;
 import java.util.Calendar;
 import java.util.Collection;
 
@@ -83,15 +86,16 @@ public class MonthAdapter extends RecyclerView.Adapter<MonthAdapter.DayViewHolde
                 Collection<Long> selectedDays = dateSelector.getSelectedDays();
                 for (Long selectedDay : selectedDays) {
                     // Convert selected day timestamp to Ethiopic date
-                    LocalDate selectedGregorian = LocalDate.ofInstant(
-                            java.time.Instant.ofEpochMilli(selectedDay),
-                            ZoneId.systemDefault()
-                    );
+//                    LocalDate selectedGregorian = LocalDate.now();
+
+                    LocalDate selectedGregorian = Instant.ofEpochMilli(selectedDay)
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate();
                     EthiopicDate selectedEthiopic = EthiopicDate.from(selectedGregorian);
 
-                    if (selectedEthiopic.getProlepticYear() == month.getYear() &&
-                        selectedEthiopic.getMonthValue() == month.getMonth() &&
-                        selectedEthiopic.getDayOfMonth() == day) {
+                    if (selectedEthiopic.get(ChronoField.YEAR) == month.getYear() &&
+                        selectedEthiopic.get(ChronoField.MONTH_OF_YEAR) == month.getMonth() &&
+                        selectedEthiopic.get(ChronoField.DAY_OF_MONTH)  == day) {
                         isSelected = true;
                         break;
                     }

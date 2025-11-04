@@ -7,8 +7,10 @@ import androidx.annotation.Nullable;
 
 import org.threeten.extra.chrono.EthiopicDate;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -51,10 +53,14 @@ public class SingleDateSelector implements DateSelector<Long> {
         }
 
         // Convert timestamp to Ethiopic date
-        LocalDate gregorianDate = LocalDate.ofInstant(
-                java.time.Instant.ofEpochMilli(selectedItem),
-                ZoneId.systemDefault()
-        );
+//        LocalDate gregorianDate = LocalDate.ofInstant(
+//                java.time.Instant.ofEpochMilli(selectedItem),
+//                ZoneId.systemDefault()
+//        );
+
+        LocalDate gregorianDate = Instant.ofEpochMilli(selectedItem)
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
         EthiopicDate ethiopicDate = EthiopicDate.from(gregorianDate);
 
         // Format as "Meskerem 5, 2017" (Ethiopic format)
@@ -63,8 +69,8 @@ public class SingleDateSelector implements DateSelector<Long> {
             "Megabit", "Miazia", "Ginbot", "Sene", "Hamle", "Nehase", "Pagume"
         };
 
-        String monthName = monthNames[ethiopicDate.getMonthValue() - 1];
-        return monthName + " " + ethiopicDate.getDayOfMonth() + ", " + ethiopicDate.getProlepticYear();
+        String monthName = monthNames[ethiopicDate.get(ChronoField.MONTH_OF_YEAR) - 1];
+        return monthName + " " + ethiopicDate.get(ChronoField.DAY_OF_MONTH) + ", " + ethiopicDate.get(ChronoField.YEAR);
     }
 
     @Override
