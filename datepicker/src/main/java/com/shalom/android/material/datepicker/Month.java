@@ -67,9 +67,8 @@ public class Month implements Comparable<Month>, Parcelable {
         return ethiopicMonthStart.lengthOfMonth();
     }
 
-    public int getDayOfWeek(int day) {
-        EthiopicDate updatedDate = ethiopicMonthStart.with(ChronoField.DAY_OF_MONTH, day);
-        return updatedDate.get(ChronoField.DAY_OF_WEEK);
+    public int getStartDayOfWeek() {
+        return ethiopicMonthStart.get(ChronoField.DAY_OF_WEEK);
     }
 
     public Month monthsLater(int months) {

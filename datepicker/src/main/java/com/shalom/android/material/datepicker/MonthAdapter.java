@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.threeten.extra.chrono.EthiopicDate;
 
+import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -49,7 +50,7 @@ public class MonthAdapter extends RecyclerView.Adapter<MonthAdapter.DayViewHolde
         this.dateSelector = dateSelector;
         this.calendarConstraints = calendarConstraints;
         this.onDayClickListener = onDayClickListener;
-        this.firstDayOfWeek = Calendar.SUNDAY;
+        this.firstDayOfWeek =   DayOfWeek.MONDAY.getValue();// Calendar.MONDAY;//calendar is wrong, we are using Time
     }
 
     @NonNull
@@ -67,7 +68,7 @@ public class MonthAdapter extends RecyclerView.Adapter<MonthAdapter.DayViewHolde
         Log.e(TAG, "onBindViewHolder:aaa  firstDayOffset: " +firstDayOffset );
         Log.e(TAG, "onBindViewHolder:aaa  position: " +position);
         Log.e(TAG, "onBindViewHolder:aaa  month.getDaysInMonth(): " +month.getDaysInMonth());
-        Log.e(TAG, "onBindViewHolder:aaa  month.getDaysInMonth(): " +month.getDayOfWeek(1));
+        Log.e(TAG, "onBindViewHolder:aaa  month.getDaysInMonth(): " +month.getStartDayOfWeek());
         Log.e(TAG, "onBindViewHolder:aaa  month.getDaysInMonth(): " +month.getMonth());
         Log.e(TAG, "onBindViewHolder:aaa  month.getDaysInMonth(): " +month.getYear());
 
@@ -167,8 +168,8 @@ public class MonthAdapter extends RecyclerView.Adapter<MonthAdapter.DayViewHolde
     }
 
     private int getFirstDayOffset() {
-        int dayOfWeek = month.getDayOfWeek(1);
-        int offset = dayOfWeek - firstDayOfWeek;
+        int monthFirstDay = month.getStartDayOfWeek();//
+        int offset = monthFirstDay - firstDayOfWeek;
         if (offset < 0) {
             offset += 7;
         }

@@ -10,6 +10,9 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.threeten.extra.chrono.EthiopicDate;
+
+import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -74,7 +77,7 @@ public class YearGridAdapter extends RecyclerView.Adapter<YearGridAdapter.YearVi
             yearTextView.setText(String.valueOf(year));
 
             // Highlight current year
-            int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+            int currentYear = EthiopicDate.now().get(ChronoField.YEAR) ;
             boolean isCurrentYear = year == currentYear;
             boolean isSelectedYear = year == selectedYear;
 
