@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <!-- Header with title and selected date -->
+    <LinearLayout
+        android:id="@+id/mtrl_picker_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="?attr/colorPrimary">
+
+        <TextView
+            android:id="@+id/mtrl_picker_title_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Select Date"
+            android:textColor="@android:color/white"
+            android:textSize="14sp"
+            android:alpha="0.7"/>
+
+        <TextView
+            android:id="@+id/mtrl_picker_header_selection_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Select a date"
+            android:textColor="@android:color/white"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginTop="8dp"/>
+    </LinearLayout>
+
+    <!-- Calendar content -->
+    <FrameLayout
+        android:id="@+id/mtrl_calendar_frame"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <!-- Action buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:padding="8dp">
+
+        <Button
+            android:id="@+id/cancel_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cancel"
+            style="?attr/borderlessButtonStyle"/>
+
+        <Button
+            android:id="@+id/confirm_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="OK"
+            style="?attr/borderlessButtonStyle"/>
+    </LinearLayout>
+
+</LinearLayout>
